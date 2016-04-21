@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 
+use Input;
+
 class ImageThreadAPIController extends Controller
 {
     /**
@@ -16,6 +18,7 @@ class ImageThreadAPIController extends Controller
     public function index()
     {
         //
+        return 'ImageThreadAPIController index!';
     }
 
     /**
@@ -23,20 +26,22 @@ class ImageThreadAPIController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        // TODO
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
+        $title = $request->input('title');
+        
+        /*
+        $file = array('image' => Input::file('image'));
+        $rules = array('image' => 'required');
+        $validator = Validator::make($file, $rules);
+        if ($validator->fails()) {
+            return 'file upload failed';
+        }
+         */
+        
+        
+        
+        return 'ImageThreadAPIController create! ' . $title;
     }
 
     /**
@@ -48,6 +53,7 @@ class ImageThreadAPIController extends Controller
     public function show($id)
     {
         //
+        return 'ImageThreadAPIController show!';
     }
 
     /**
@@ -59,6 +65,7 @@ class ImageThreadAPIController extends Controller
     public function edit($id)
     {
         //
+        return 'ImageThreadAPIController edit!';
     }
 
     /**
@@ -71,6 +78,7 @@ class ImageThreadAPIController extends Controller
     public function update(Request $request, $id)
     {
         //
+        return 'ImageThreadAPIController update!';
     }
 
     /**
@@ -82,5 +90,6 @@ class ImageThreadAPIController extends Controller
     public function destroy($id)
     {
         //
+        return 'ImageThreadAPIController destroy!';
     }
 }

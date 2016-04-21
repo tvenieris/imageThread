@@ -17,5 +17,5 @@ Route::get('/', function () {
 });
  */
 
-Route::resource('/', 'ImageThreadController');
-Route::resource('/api/posts/create', 'ImageThreadAPIController@create');
+Route::get('/', 'ImageThreadController');
+Route::post('/api/posts/create', 'ImageThreadAPIController@store');

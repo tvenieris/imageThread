@@ -16,7 +16,9 @@
                     </div>
                     <div>
                         {!! Form::open() !!}
-                            <input type="bitton" name="export" value="Export button"/>
+                    <div class="form-group">
+                            {!! Form::submit('Export', null, ['class' => 'btn btn-primary form-control']) !!}
+                    </div>
                         {!! Form::close() !!}
                     </div>
                     <div>
@@ -26,10 +28,19 @@
                 </div>
                 
                 <div>
-                    <form>
-                        <input type="text" name="image_title" value=""/>
-                        <input type="file" name="image_file"/>
-                    </form>
+                    {!! Form::open(['url' => '/api/posts/create', 'files' => true]) !!}
+                    <div class="form-group">
+                            {!! Form::label('title', 'Title:') !!}
+                            {!! Form::text('title', null, ['class' => 'form-control']) !!}
+                    </div>
+                    <div class="form-group">
+                            {!! Form::label('image', 'Image:') !!}
+                            {!! Form::file('image', null, ['class' => 'form-control']) !!}
+                    </div>
+                    <div class="form-group">
+                            {!! Form::submit('Add', null, ['class' => 'btn btn-primary form-control']) !!}
+                    </div>
+                    {!! Form::close() !!}
                 </div>
                 
                 <div>
