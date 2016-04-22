@@ -12,7 +12,7 @@
                 <div>
                     <div>
                         <div>Posts:</div>
-                        <div>#posts</div>
+                        <div>{{ $posts_amount or '0' }}</div>
                     </div>
                     <div>
                         {!! Form::open() !!}
@@ -23,7 +23,7 @@
                     </div>
                     <div>
                         <div>Views:</div>
-                        <div>#views</div>
+                        <div>{{ $views_amount or '0' }}</div>
                     </div>
                 </div>
                 
@@ -43,13 +43,17 @@
                     {!! Form::close() !!}
                 </div>
                 
+@forelse ($posts as $post)
                 <div>
-                    <div>Image title</div>
+                    <h3>{{ $post->title }}</h3>
                     <div>
-                        <img src=""/>
+                        <img src="{{ url('/uploads') . '/' . $post->image_path }}" alt="Posted image"/>
                     </div>
                 </div>
-                
+@empty
+    <p>No posts</p>
+@endforelse
+
             </div>
 
         </div>

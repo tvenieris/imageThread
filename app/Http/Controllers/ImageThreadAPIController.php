@@ -8,6 +8,8 @@ use App\Http\Requests;
 
 use Input;
 
+use App\Post;
+
 class ImageThreadAPIController extends Controller
 {
     /**
@@ -57,11 +59,32 @@ class ImageThreadAPIController extends Controller
         }
          */
         
-        $limit = 200000;
+        $limit = 20000000;
         if ($file->getSize() > $limit) {
             return response(['code' => 400, 'description' => 'Uploaded file is bigger than ' . $limit . ' bytes'], 400);
         }
+
+        $badPicError = ['code' => 400, 'description' => 'Uploaded file is not a correct image'];
+        $imageInfo = getimagesize($file->getRealPath());
+        if (empty($imageInfo) || empty($imageInfo[3])) {
+            return response($badPicError, 400);
+        }
+        switch ($imageInfo[2]) {
+            case IMG_GIF:
+            case IMG_JPEG:
+            case IMG_PNG:
+                break;
+            default:
+                return response($badPicError, 400);
+        }
         
+        $widthMax =  1920;
+        $heightMax = 1080;
+        if(($imageInfo[0] > $widthMax) || ($imageInfo[1] > $heightMax)) {
+            return response(['code' => 400, 'description' => 'Uploaded file is '
+                . $imageInfo[0] . 'x' . $imageInfo[1] . ', bigger than ' . $widthMax . 'x' . $heightMax], 400);
+        }
+/*        
         $imageType = exif_imagetype($file->getRealPath());
         switch ($imageType) {
             case IMAGETYPE_GIF:
@@ -71,7 +94,7 @@ class ImageThreadAPIController extends Controller
             default:
                 return response(['code' => 400, 'description' => 'Uploaded file is not a correct image'], 400);
         }
-        
+*/      
         $tries = 0;
         do {
             $finalname = uniqid('', true) . '.' . $extension;
@@ -81,7 +104,14 @@ class ImageThreadAPIController extends Controller
             return response(['code' => 500, 'description' => 'Server problem!'], 500);
         }
         
-        return 'ImageThreadAPIController create! ' . $title;
+        $post = new Post();
+        if ($title) {
+            $post->title = $title;
+        }
+        $post->image_path = $finalname;
+        $post->save();
+        
+        return response(['code' => 200, 'description' => 'Image uploaded!'], 200);
     }
 
     /**

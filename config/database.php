@@ -48,7 +48,7 @@ return [
 
         'sqlite' => [
             'driver' => 'sqlite',
-            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'database' => database_path('database.sqlite'), // http://www.it1me.com/it-answers?id=36373835&ttl=How+to+make+SQLite+work+in+Laravel
             'prefix' => '',
         ],
 
