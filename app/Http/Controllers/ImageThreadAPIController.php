@@ -29,17 +29,57 @@ class ImageThreadAPIController extends Controller
     public function create(Request $request)
     {
         $title = $request->input('title');
+     
+        $fieldname = 'image';
+        if (!$request->hasFile($fieldname)) {
+            return response(['code' => 400, 'description' => 'No file uploaded'], 400);
+        }
+        $file = $request->file($fieldname);
+        if (!$file->isValid()) {
+            return response(['code' => 400, 'description' => 'Invalid file uploaded'], 400);
+        }
         
+        $clientExtension = $file->getClientOriginalExtension();
+        $extension = $clientExtension;
+        switch ($clientExtension) {
+            case 'png':
+            case 'jpg':
+            case 'jpeg':
+            case 'gif':
+                break;
+            default:
+                return response(['code' => 400, 'description' => 'Uploaded file is not an image'], 400);
+        }
+
         /*
-        $file = array('image' => Input::file('image'));
-        $rules = array('image' => 'required');
-        $validator = Validator::make($file, $rules);
-        if ($validator->fails()) {
-            return 'file upload failed';
+        if (true) {
+            return response(['code' => 400, 'description' => 'upload max is ' . $file->getMaxFilesize()], 400);
         }
          */
         
+        $limit = 200000;
+        if ($file->getSize() > $limit) {
+            return response(['code' => 400, 'description' => 'Uploaded file is bigger than ' . $limit . ' bytes'], 400);
+        }
         
+        $imageType = exif_imagetype($file->getRealPath());
+        switch ($imageType) {
+            case IMAGETYPE_GIF:
+            case IMAGETYPE_JPEG:
+            case IMAGETYPE_PNG:
+                break;
+            default:
+                return response(['code' => 400, 'description' => 'Uploaded file is not a correct image'], 400);
+        }
+        
+        $tries = 0;
+        do {
+            $finalname = uniqid('', true) . '.' . $extension;
+        } while (file_exists(base_path() . '/public/uploads/' . $finalname) || ($tries++ < 16));
+        
+        if (!$file->move('uploads/', $finalname)) {
+            return response(['code' => 500, 'description' => 'Server problem!'], 500);
+        }
         
         return 'ImageThreadAPIController create! ' . $title;
     }
