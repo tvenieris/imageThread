@@ -14,6 +14,8 @@ use DB;
 
 use App\Stats;
 
+use ZipArchive;
+
 class ImageThreadAPIController extends Controller
 {
     /**
@@ -151,6 +153,73 @@ class ImageThreadAPIController extends Controller
         ]);
     }
 
+    public function exportCSV() {
+        
+        if (true) {
+            // zip file
+            $csvHandle = tmpfile();
+            $csvMetaData = stream_get_meta_data($csvHandle);
+            fputcsv($csvHandle, ['Title', 'URL']);
+            Post::chunk(1024, function($posts) use ($csvHandle) {
+                foreach ($posts as $post) {
+                    fputcsv ($csvHandle, [$post->title, $post->getURL()]);
+                }
+            });
+            
+            $zipExportFilename = 'export_posts.zip';
+            $headers = array(
+                'Content-Type' => 'application/octet-stream',
+                'Content-Disposition' => 'attachment; filename=' . $zipExportFilename
+            );
+            foreach ($headers as $header_name => $header_value) {
+                header($header_name . ': ' . $header_value);
+            }
+
+            $zipHandle = tmpfile();
+            $zipMetaData = stream_get_meta_data($zipHandle);
+            $zip = new ZipArchive();
+            if ($zip->open($zipMetaData['uri'], ZipArchive::CREATE) !== true) {
+                abort(500, 'Failed to create ZIP file');
+            }   
+            if (!$zip->addFile($csvMetaData['uri'], 'posts.csv')) {
+                abort(500, 'Failed to add CSV file to ZIP');
+            }
+            Post::chunk(1024, function($posts) use ($zip) {
+                foreach ($posts as $post) {
+                    // echo public_path() . '/uploads/' . $post->image_path;
+                    $zip->addFile(public_path() . '/uploads/' . $post->image_path, $post->image_path);
+                }
+            });
+            
+            $zip->close();
+            
+            readfile($zipMetaData['uri']);
+            die();
+        }
+        
+        $export_filename = 'export_posts.csv';
+        $headers = array(
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=' . $export_filename
+        );
+        foreach ($headers as $header_name => $header_value) {
+            header($header_name . ': ' . $header_value);
+        }
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Title', 'URL']);
+        Post::chunk(1024, function($posts) use ($out) {
+            foreach ($posts as $post) {
+                fputcsv ($out, [$post->title, $post->getURL()]);
+            }
+        });
+        fclose($out);
+        die();
+    }
+    
+    public function exportXLS() {
+        return 'export xls!';
+    }
+    
     /**
      * Display the specified resource.
      *

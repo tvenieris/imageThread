@@ -21,4 +21,5 @@ Route::get('/', 'ImageThreadController@index');
 Route::post('/api/posts/create', 'ImageThreadAPIController@create');
 Route::get('/api/stats/get', 'ImageThreadAPIController@getStats');
 
-// Route::get('api/posts/export_csv', 'ImageThreadAPIController@exportCSV');
+Route::get('/api/posts/export_csv', 'ImageThreadAPIController@exportCSV');
+Route::get('/api/posts/export_xls', 'ImageThreadAPIController@exportXLS');

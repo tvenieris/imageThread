@@ -17,10 +17,11 @@
                         <div id="posts_amount_cnt">{{ $posts_amount or '0' }}</div>
                     </div>
                     <div>
-                        {!! Form::open() !!}
-                    <div class="form-group">
-                            {!! Form::submit('Export', null, ['class' => 'btn btn-primary form-control']) !!}
-                    </div>
+                        {!! Form::open(['url' => '/api/posts/export_csv', 'method' => 'get']) !!}
+                            {!! Form::submit('Export CSV') !!}
+                        {!! Form::close() !!}
+                        {!! Form::open(['url' => '/api/posts/export_xls', 'method' => 'get']) !!}
+                            {!! Form::submit('Export Excel') !!}
                         {!! Form::close() !!}
                     </div>
                     <div>
@@ -54,7 +55,7 @@
                 <div>
                     <h3>{{ $post->title or 'Untitled'}}</h3>
                     <div>
-                        <img src="{{ url('/uploads') . '/' . $post->image_path }}" alt="Posted image"/>
+                        <img src="{{ $post->getURL() }}" alt="Posted image"/>
                     </div>
                 </div>
 @empty
