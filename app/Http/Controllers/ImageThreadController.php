@@ -14,22 +14,14 @@ use App\Stats;
 
 class ImageThreadController extends Controller
 {
-    public function index() {
+    public function index(Request $request) {
         
-        $stats = Stats::find(1);
-        if (empty($stats)) {
-            $stats = new Stats();
-            $stats->id = 1;
-            $stats->views = 1;
-            $stats->save();
-        } else {
-            $stats->views++;
-            $stats->save();
-        }
+        $stats = Stats::increaseViews();
         return view('main', [
             'posts_amount' => DB::table('posts')->count(),
             'posts' => Post::all(),
-             'views_amount' => $stats->views
+            'views_amount' => $stats->views,
+            'last_error' => $request->session()->get('last_error')
         ]);
     }
 }

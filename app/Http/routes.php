@@ -17,5 +17,8 @@ Route::get('/', function () {
 });
  */
 
-Route::get('/', 'ImageThreadController');
-Route::post('/api/posts/create', 'ImageThreadAPIController@store');
+Route::get('/', 'ImageThreadController@index');
+Route::post('/api/posts/create', 'ImageThreadAPIController@create');
+Route::get('/api/stats/get', 'ImageThreadAPIController@getStats');
+
+// Route::get('api/posts/export_csv', 'ImageThreadAPIController@exportCSV');

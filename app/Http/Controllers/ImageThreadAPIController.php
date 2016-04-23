@@ -10,6 +10,10 @@ use Input;
 
 use App\Post;
 
+use DB;
+
+use App\Stats;
+
 class ImageThreadAPIController extends Controller
 {
     /**
@@ -23,6 +27,14 @@ class ImageThreadAPIController extends Controller
         return 'ImageThreadAPIController index!';
     }
 
+    private function smartResponse(Request $request, Array $response) {
+        if ($request->wantsJson()) {
+            return response($response, $response['code']);
+        }
+        $request->session()->flash('last_error', $response);
+        return redirect('/');
+    }
+    
     /**
      * Show the form for creating a new resource.
      *
@@ -34,11 +46,12 @@ class ImageThreadAPIController extends Controller
      
         $fieldname = 'image';
         if (!$request->hasFile($fieldname)) {
-            return response(['code' => 400, 'description' => 'No file uploaded'], 400);
+            return $this->smartResponse($request, ['code' => 400, 'description' => 'No file uploaded']);
         }
         $file = $request->file($fieldname);
         if (!$file->isValid()) {
-            return response(['code' => 400, 'description' => 'Invalid file uploaded'], 400);
+            // return response(['code' => 400, 'description' => 'Invalid file uploaded'], 400);
+            return $this->smartResponse($request, ['code' => 400, 'description' => 'Invalid file uploaded']);
         }
         
         $clientExtension = $file->getClientOriginalExtension();
@@ -50,7 +63,8 @@ class ImageThreadAPIController extends Controller
             case 'gif':
                 break;
             default:
-                return response(['code' => 400, 'description' => 'Uploaded file is not an image'], 400);
+                // return response(['code' => 400, 'description' => 'Uploaded file is not an image'], 400);
+                return $this->smartResponse($request, ['code' => 400, 'description' => 'Uploaded file is not an image']);
         }
 
         /*
@@ -61,13 +75,15 @@ class ImageThreadAPIController extends Controller
         
         $limit = 20000000;
         if ($file->getSize() > $limit) {
-            return response(['code' => 400, 'description' => 'Uploaded file is bigger than ' . $limit . ' bytes'], 400);
+            // return response(['code' => 400, 'description' => 'Uploaded file is bigger than ' . $limit . ' bytes'], 400);
+            return $this->smartResponse($request, ['code' => 400, 'description' => 'Uploaded file is bigger than ' . $limit . ' bytes']);
         }
 
         $badPicError = ['code' => 400, 'description' => 'Uploaded file is not a correct image'];
         $imageInfo = getimagesize($file->getRealPath());
         if (empty($imageInfo) || empty($imageInfo[3])) {
-            return response($badPicError, 400);
+            // return response($badPicError, 400);
+            return $this->smartResponse($request, $badPicError);
         }
         switch ($imageInfo[2]) {
             case IMG_GIF:
@@ -75,14 +91,19 @@ class ImageThreadAPIController extends Controller
             case IMG_PNG:
                 break;
             default:
-                return response($badPicError, 400);
+                // return response($badPicError, 400);
+                return $this->smartResponse($request, $badPicError);
         }
         
         $widthMax =  1920;
         $heightMax = 1080;
         if(($imageInfo[0] > $widthMax) || ($imageInfo[1] > $heightMax)) {
+            /*
             return response(['code' => 400, 'description' => 'Uploaded file is '
                 . $imageInfo[0] . 'x' . $imageInfo[1] . ', bigger than ' . $widthMax . 'x' . $heightMax], 400);
+             */
+            return $this->smartResponse($request, ['code' => 400, 'description' => 'Uploaded file is '
+                . $imageInfo[0] . 'x' . $imageInfo[1] . ', bigger than ' . $widthMax . 'x' . $heightMax]);
         }
 /*        
         $imageType = exif_imagetype($file->getRealPath());
@@ -101,7 +122,8 @@ class ImageThreadAPIController extends Controller
         } while (file_exists(base_path() . '/public/uploads/' . $finalname) || ($tries++ < 16));
         
         if (!$file->move('uploads/', $finalname)) {
-            return response(['code' => 500, 'description' => 'Server problem!'], 500);
+            // return response(['code' => 500, 'description' => 'Server problem!'], 500);
+            return $this->smartResponse($request, ['code' => 500, 'description' => 'Server problem!']);
         }
         
         $post = new Post();
@@ -111,7 +133,22 @@ class ImageThreadAPIController extends Controller
         $post->image_path = $finalname;
         $post->save();
         
-        return response(['code' => 200, 'description' => 'Image uploaded!'], 200);
+        if ($request->wantsJson()) {
+            return response(['code' => 200, 'description' => 'Image uploaded!'], 200);
+        }
+        return redirect('/');
+    }
+
+    /**
+     * @return \Illuminate\Http\Response
+     */
+    public function getStats()
+    {
+        $stats = Stats::getViews();
+        return response([
+            'posts_amount' => DB::table('posts')->count(),
+            'views_amount' => $stats->views
+        ]);
     }
 
     /**
