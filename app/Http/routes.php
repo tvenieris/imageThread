@@ -23,3 +23,6 @@ Route::get('/api/stats/get', 'ImageThreadAPIController@getStats');
 
 Route::get('/api/posts/export_csv', 'ImageThreadAPIController@exportCSV');
 Route::get('/api/posts/export_xls', 'ImageThreadAPIController@exportXLS');
+
+Route::get('/api/posts/get/all', 'ImageThreadAPIController@showAll');
+Route::get('/api/posts/get/{id}', 'ImageThreadAPIController@show');

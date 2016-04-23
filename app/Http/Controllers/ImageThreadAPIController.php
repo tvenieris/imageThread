@@ -18,17 +18,6 @@ use ZipArchive;
 
 class ImageThreadAPIController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-        return 'ImageThreadAPIController index!';
-    }
-
     private function smartResponse(Request $request, Array $response) {
         if ($request->wantsJson()) {
             return response($response, $response['code']);
@@ -228,44 +217,25 @@ class ImageThreadAPIController extends Controller
      */
     public function show($id)
     {
-        //
-        return 'ImageThreadAPIController show!';
+        $post = Post::find($id);
+        if (empty($post)) {
+            $response = ['code' => 404, 'description' => 'Post not found'];
+            return response($response, $response['code']);
+        }
+        return response($post->getArray());
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function showAll()
     {
-        //
-        return 'ImageThreadAPIController edit!';
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-        return 'ImageThreadAPIController update!';
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-        return 'ImageThreadAPIController destroy!';
+        $r = [];
+        Post::chunk(1024, function($posts) use (&$r) {
+            foreach ($posts as $post) {
+                $r[] = $post->getArray();
+            }
+        });
+        return response($r);
     }
 }

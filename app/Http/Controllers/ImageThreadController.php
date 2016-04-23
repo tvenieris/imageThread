@@ -19,7 +19,7 @@ class ImageThreadController extends Controller
         $stats = Stats::increaseViews();
         return view('main', [
             'posts_amount' => DB::table('posts')->count(),
-            'posts' => Post::all(),
+            'posts' => Post::orderBy('id', 'desc')->get(),
             'views_amount' => $stats->views,
             'last_error' => $request->session()->get('last_error')
         ]);

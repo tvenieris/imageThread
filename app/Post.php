@@ -9,4 +9,8 @@ class Post extends Model
     public function getURL() {
         return url('uploads') . '/' . $this->image_path;
     }
+    
+    public function getArray() {
+        return ['title' => $this->title, 'image_path' => $this->getURL()];
+    }
 }
