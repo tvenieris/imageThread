@@ -16,6 +16,8 @@ use App\Stats;
 
 use ZipArchive;
 
+use Excel;
+
 class ImageThreadAPIController extends Controller
 {
     private function smartResponse(Request $request, Array $response) {
@@ -77,9 +79,9 @@ class ImageThreadAPIController extends Controller
             return $this->smartResponse($request, $badPicError);
         }
         switch ($imageInfo[2]) {
-            case IMG_GIF:
-            case IMG_JPEG:
-            case IMG_PNG:
+            case IMAGETYPE_GIF:
+            case IMAGETYPE_JPEG:
+            case IMAGETYPE_PNG:
                 break;
             default:
                 // return response($badPicError, 400);
@@ -151,7 +153,7 @@ class ImageThreadAPIController extends Controller
             fputcsv($csvHandle, ['Title', 'URL']);
             Post::chunk(1024, function($posts) use ($csvHandle) {
                 foreach ($posts as $post) {
-                    fputcsv ($csvHandle, [$post->title, $post->getURL()]);
+                    fputcsv ($csvHandle, $post->getArray());
                 }
             });
             
@@ -198,7 +200,7 @@ class ImageThreadAPIController extends Controller
         fputcsv($out, ['Title', 'URL']);
         Post::chunk(1024, function($posts) use ($out) {
             foreach ($posts as $post) {
-                fputcsv ($out, [$post->title, $post->getURL()]);
+                fputcsv ($out, $post->getArray());
             }
         });
         fclose($out);
@@ -206,7 +208,41 @@ class ImageThreadAPIController extends Controller
     }
     
     public function exportXLS() {
-        return 'export xls!';
+        Excel::create('export', function ($excel) {
+            $excel->sheet('Sheet1', function($sheet) {
+                
+                $row = 2;
+                $pageSize = 1024;
+                Post::chunk($pageSize, function($posts) use ($sheet, &$row) {
+                    $page = [];
+                    foreach ($posts as $post) {
+                        $data = array_values($post->getArray());
+                        $page[] = $data;
+                        
+                    }
+                    if (!empty($page)) {
+                        // $sheet->fromArray($page, null, ('A' . $row)); // doesnt work - dont know why
+                        foreach ($page as $line) {
+                            $sheet->SetCellValue('A' . $row, $line[0]);
+                            $sheet->SetCellValue('B' . $row, $line[1]);
+                            $row++;
+                        }
+                        // $row += $pageSize;
+                    }
+                });
+
+                $sheet->setCellValue('A1', 'Title');
+                $sheet->setCellValue('B1', 'Image');
+                
+                $header = 'A1:B1';
+                $sheet->getStyle($header)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID)->getStartColor();
+                $style = array(
+                    'font' => array('bold' => true,),
+                    'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER,),
+                    );
+                $sheet->getStyle($header)->applyFromArray($style);
+            });
+        })->download('xlsx');
     }
     
     /**

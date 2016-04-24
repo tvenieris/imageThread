@@ -11,6 +11,6 @@ class Post extends Model
     }
     
     public function getArray() {
-        return ['title' => $this->title, 'image_path' => $this->getURL()];
+        return ['title' => ($this->title ? $this->title : 'Untitled'), 'image_path' => $this->getURL()];
     }
 }
